@@ -1,7 +1,7 @@
 <template>
     <div>
         <h2>こんにちは {{ name }}さん</h2>
-        <button @click="signOut">サインアウト</button>
+        <button @click="logOut">サインアウト</button>
     </div>
 </template>
 
@@ -14,12 +14,11 @@ export default {
             name: firebase.auth().currentUser.displayName
         }
     },
-    methods: {
-        signOut: function () {
-            firebase.auth().signOut().then(() => {
-                this.$router.push('/signin')
-            })
-        }
+    methods:{
+      logOut(){
+     this.$store.dispatch('signOut')
+      }
     }
+
 }
 </script>

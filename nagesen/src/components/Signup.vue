@@ -31,24 +31,16 @@ export default {
   },
 /* eslint-disable */
   methods: {
-    signUp: function () {
-      firebase.auth().createUserWithEmailAndPassword(this.email, this.password)
-        .then(
-          () => {
-            firebase.auth().currentUser.updateProfile({
-              displayName: this.username,
-          })
-        .then(
-          () => {
-            this.$router.push('/Home')
-          })
-        })
-        .catch(error => {
-          alert(error.message)
-        })
+    signUp () {
+      this.$store.dispatch('signUp', {
+        username: this.username,
+        email: this.email,
+        password: this.password,
+      })
     },
   }
 }
+
 
 </script>
 
