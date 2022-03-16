@@ -1,6 +1,7 @@
 <template>
   <div class="hello">
     <h1>{{ msg }}</h1>
+    <button><router-link to="/signup">新規登録</router-link></button>
     <h2>Essential Links</h2>
     <ul>
       <li>
