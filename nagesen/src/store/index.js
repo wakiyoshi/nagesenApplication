@@ -14,7 +14,13 @@ const store = new Vuex.Store({
     email: '',
     password: '',
     loginEmail: '',
-    loginPassword: ''
+    loginPassword: '',
+    myWallet:'',
+  },
+  getters:{
+    myWallet(state){
+      return state.myWallet;
+    }
   },
   mutations: {
     AddToState: function (state, payload) {
@@ -23,15 +29,31 @@ const store = new Vuex.Store({
       state.username = payload.username
       state.loginEmail = payload.loginEmail
       state.loginPassword = payload.loginPassword
-    }
+      state.myWallet = payload.myWallet
+    },
+    setUserData(state, doc) {
+      state.username = doc.data().username
+      state.myWallet = doc.data().myWallet
+    },
   },
   actions: {
       signUp: function (context, payload) {
         firebase.auth().createUserWithEmailAndPassword(payload.email, payload.password)
           .then(() => {
-            firebase.auth().currentUser.updateProfile({
+            const user = firebase.auth().currentUser
+            user.updateProfile({
               displayName: payload.username,
             },)
+            .then(() => {
+              const db = firebase.firestore();
+              db.collection("userData").doc(user.uid).set({
+                uid: user.uid,
+                email: payload.email,
+                password: payload.password,
+                username: payload.username,
+                myWallet: payload.myWallet,
+              })
+            })
             .then(() => {
               context.commit('AddToState', payload)
             })
@@ -54,7 +76,18 @@ const store = new Vuex.Store({
       signIn: function (context,payload){
         firebase.auth().signInWithEmailAndPassword(payload.loginEmail,payload.loginPassword)
           .then(() => {
-            context.commit('AddToState', payload)
+            const user = firebase.auth().currentUser
+            const docRef = firebase.firestore().collection("userData").doc(user.uid);
+            docRef.get()
+          .then((doc) => {
+            if (doc.exists) {
+              context.commit('setUserData', doc)
+            } else {
+              console.log('ダメ');
+            }
+          })
+        })
+          .then(()=>{
             router.push('/home')
           })
           .catch(error => {
