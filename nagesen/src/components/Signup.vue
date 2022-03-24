@@ -1,6 +1,7 @@
 <template>
   <div class="signup">
     <h2>新規登録</h2>
+    <input type="hidden" v-model="myWallet" >
     <div>
       ユーザ名<input type="text" v-model="username">
     </div>
@@ -25,7 +26,8 @@ export default {
     return {
       username: '',
       email: '',
-      password: ''
+      password: '',
+      myWallet: '500',
     }
   },
 /* eslint-disable */
@@ -35,6 +37,7 @@ export default {
         username: this.username,
         email: this.email,
         password: this.password,
+        myWallet: this.myWallet,
       })
     },
   }
