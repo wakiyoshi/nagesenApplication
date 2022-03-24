@@ -20,6 +20,9 @@ const store = new Vuex.Store({
   getters:{
     myWallet(state){
       return state.myWallet;
+    },
+    modalDatas(state){
+      return state.modalDatas
     }
   },
   mutations: {
@@ -35,36 +38,42 @@ const store = new Vuex.Store({
       state.username = doc.data().username
       state.myWallet = doc.data().myWallet
     },
+    setUsersData(state, users) {
+      state.users = users
+    },
+    setModalDatas(state, modalDatas) {
+      state.modalDatas = modalDatas
+    },
   },
   actions: {
-      signUp: function (context, payload) {
-        firebase.auth().createUserWithEmailAndPassword(payload.email, payload.password)
+    signUp: function (context, payload) {
+      firebase.auth().createUserWithEmailAndPassword(payload.email, payload.password)
+        .then(() => {
+          const user = firebase.auth().currentUser
+          user.updateProfile({
+            displayName: payload.username,
+          },)
           .then(() => {
-            const user = firebase.auth().currentUser
-            user.updateProfile({
-              displayName: payload.username,
-            },)
-            .then(() => {
-              const db = firebase.firestore();
-              db.collection("userData").doc(user.uid).set({
-                uid: user.uid,
-                email: payload.email,
-                password: payload.password,
-                username: payload.username,
-                myWallet: payload.myWallet,
-              })
+            const db = firebase.firestore();
+            db.collection("userData").doc(user.uid).set({
+              uid: user.uid,
+              email: payload.email,
+              password: payload.password,
+              username: payload.username,
+              myWallet: payload.myWallet,
             })
-            .then(() => {
-              context.commit('AddToState', payload)
-            })
-            .then(() => {
-              router.push('/home')
-            })
-            })
-            .catch(error => {
-              console.log(error.message)
-            })
-      },
+          })
+          .then(() => {
+            context.commit('AddToState', payload)
+          })
+          .then(() => {
+            router.push('/home')
+          })
+          })
+          .catch(error => {
+            console.log(error.message)
+          })
+    },
       signOut: function () {
         firebase.auth().signOut().then(() => {
             router.push('/signin')
@@ -93,8 +102,29 @@ const store = new Vuex.Store({
           .catch(error => {
             console.log(error.message)
           })
-      }
+      },
+      modalSet (context, usersIndex) {
+        const modalDatas = [];
+        const user = firebase.auth().currentUser
+        const db = firebase.firestore();
+        db.collection("userData")
+          .where(firebase.firestore.FieldPath.documentId(), "==", user.uid)
+          .get()
+          .then((querySnapshot) => {
+            querySnapshot.forEach((doc) => {
+              const modalData = {
+                uid: usersIndex,
+                username: doc.data().username,
+                myWallet: doc.data().myWallet
+              }
+              modalDatas.push(modalData)
+              context.commit('setModalDatas', modalDatas)
+              console.log(modalDatas)
+            });
+      });
+    },
   },
+
 });
 
 export default store
