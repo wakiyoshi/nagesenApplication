@@ -1,7 +1,7 @@
 <template>
   <div class="overlay" v-show="showContent">
     <div class="main-content">
-      <p>{{ data[val].username }}さんの残高:{{data[val].myWallet}}</p>
+      <p v-if="data[val]">{{ data[val].username }}さんの残高:{{data[val].myWallet}}</p>
       <div id="button-content">
         <p>
           <button @click="closeModal" class="modal-button">close</button>
