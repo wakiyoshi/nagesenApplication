@@ -16,13 +16,18 @@ const store = new Vuex.Store({
     loginEmail: '',
     loginPassword: '',
     myWallet:'',
+    userDatas:[],
+    modalDatas:[],
   },
   getters:{
     myWallet(state){
       return state.myWallet;
     },
     modalDatas(state){
-      return state.modalDatas
+      return state.modalDatas;
+    },
+    userData(state){
+      return state.userData;
     }
   },
   mutations: {
@@ -33,6 +38,9 @@ const store = new Vuex.Store({
       state.loginEmail = payload.loginEmail
       state.loginPassword = payload.loginPassword
       state.myWallet = payload.myWallet
+    },
+    setUserDatas(state,userDatas) {
+      state.userDatas = userDatas
     },
     setUserData(state, doc) {
       state.username = doc.data().username
@@ -102,6 +110,33 @@ const store = new Vuex.Store({
           .catch(error => {
             console.log(error.message)
           })
+      },
+      loginCheck: function (context){
+        firebase.auth().onAuthStateChanged((user) => {
+          if (user) {
+            console.log("true");
+          } else {
+            location.href = "/signin";
+          }
+          const userDatas = []
+          const currentUser = firebase.auth().currentUser
+          firebase
+          .firestore()
+          .collection("userData")
+          .where(firebase.firestore.FieldPath.documentId(), "!=", currentUser.uid)
+          .get()
+          .then((querySnapshot) => {
+            querySnapshot.forEach((doc) => {
+              const userData = {
+                username: doc.data().username,
+                myWallet: doc.data().myWallet,
+              };
+              userDatas.push(userData)
+              context.commit("setUserDatas",userDatas)
+              console.log(userData)
+            });
+          })
+        })
       },
       modalSet (context, usersIndex) {
         const modalDatas = [];

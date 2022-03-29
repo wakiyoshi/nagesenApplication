@@ -10,7 +10,7 @@
           <th>ユーザー</th>
         </tr>
       </thead>
-    <tr v-for="(user,index) in userData" :key="index">
+    <tr v-for="(user,index) in userDatas" :key="index">
       <td>{{user.username}}</td>
       <td><button class="button" @click="openModal(index)">Walletを見る</button></td>
       <td><button class="button2" @click="openModal2(index)">送る</button></td>
@@ -19,7 +19,7 @@
     <div>
       <transition>
         <Modal
-          :data="userData"
+          :data="userDatas"
           :val="usersIndex"
           v-show="showContent"
           @click="closeModal"
@@ -31,7 +31,7 @@
     <div>
       <transition>
         <Modal2
-          :data="userData"
+          :data="userDatas"
           :val="usersIndex"
           v-show="showContent2"
           @click="closeModal2"
@@ -60,15 +60,14 @@ export default {
       showContent:false,
       showContent2: false,
       usersIndex:'',
-      userData: [],
+      userDatas: [],
     }
   },
   methods:{
     openModal (index){
     this.showContent = true
     this.usersIndex = index
-    const usersIndex = this.usersIndex
-    this.$store.dispatch('modalSet', usersIndex)
+    this.$store.dispatch('modalSet', this.usersIndex)
     },
     closeModal (){
       this.showContent = false
@@ -76,7 +75,6 @@ export default {
     openModal2 (index){
       this.showContent2 = true
       this.usersIndex = index
-      const usersIndex = this.usersIndex
       this.$store.dispatch('modalSet', usersIndex)
     },
     closeModal2 (){
@@ -90,31 +88,13 @@ export default {
     myWallet() {
       return this.$store.getters.myWallet;
     },
-
+    showData() {
+      return this.$store.getters.userDatas;
     },
     mounted(){
-      firebase.auth().onAuthStateChanged((user) => {
-      if (user) {
-        console.log("true");
-      } else {
-        location.href = "/signin";
-      }
-      const currentUser = firebase.auth().currentUser;
-      this.uid = currentUser.uid;
-      firebase.firestore()
-      .collection("userData")
-      .where(firebase.firestore.FieldPath.documentId(), "!=", currentUser.uid)
-      .get()
-      .then((querySnapshot) => {
-        querySnapshot.forEach((doc) => {
-          let data = {
-            username: doc.data().username,
-            myWallet: doc.data().myWallet,
-          };
-          this.userData.push(data);
-        });
-      });
-    })
-  }
+      return this.$store.dispatch('loginCheck')
+    }
+  },
+
 }
 </script>
