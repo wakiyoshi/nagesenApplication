@@ -26,9 +26,10 @@ const store = new Vuex.Store({
     modalDatas(state){
       return state.modalDatas;
     },
-    userData(state){
-      return state.userData;
+    userDatas(state){
+      return state.userDatas;
     }
+
   },
   mutations: {
     AddToState: function (state, payload) {
@@ -40,7 +41,7 @@ const store = new Vuex.Store({
       state.myWallet = payload.myWallet
     },
     setUserDatas(state,userDatas) {
-      state.userDatas = userDatas
+      state.userDatas.push(userDatas);
     },
     setUserData(state, doc) {
       state.username = doc.data().username
@@ -118,7 +119,6 @@ const store = new Vuex.Store({
           } else {
             location.href = "/signin";
           }
-          const userDatas = []
           const currentUser = firebase.auth().currentUser
           firebase
           .firestore()
@@ -127,13 +127,14 @@ const store = new Vuex.Store({
           .get()
           .then((querySnapshot) => {
             querySnapshot.forEach((doc) => {
-              const userData = {
+              const userDatas = {
                 username: doc.data().username,
                 myWallet: doc.data().myWallet,
               };
-              userDatas.push(userData)
+
+
               context.commit("setUserDatas",userDatas)
-              console.log(userData)
+
             });
           })
         })
@@ -156,11 +157,30 @@ const store = new Vuex.Store({
               context.commit('setModalDatas', modalDatas)
               console.log(modalDatas)
             });
-      });
-    },
-  },
+        });
+      },
+    nagesen(context,nagesen,val) {
+      // console.log(val);
+      const user = firebase.auth().currentUser
+      const db = firebase.firestore();
+      const sendRef = db.collection("userData").doc(user.uid)
+      sendRef.update({
+        myWallet :  nagesen
+      })
+      // console.log(sendRef);
+      db.collection("userData")
+      .where(firebase.firestore.FieldPath.documentId(), "==", val)
+      .get()
+      .update({
+        myWallet : nage
+      })
 
-});
+
+    }
+  }
+
+  });
+
 
 export default store
 
