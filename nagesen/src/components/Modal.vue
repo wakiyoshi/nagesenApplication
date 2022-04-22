@@ -31,3 +31,28 @@ export default {
   },
 };
 </script>
+<style>
+.overlay {
+	position: fixed;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	background-color: rgba(0, 0, 0, 0.5);
+	z-index: 10;
+}
+.main-content {
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	display: flex;
+	flex-direction: column;
+	justify-content: space-between;
+	width: 500px;
+	height: 200px;
+	padding: 32px;
+	background-color: #fff;
+	border-radius: 4px;
+	transform: translate(-50%, -50%);
+}
+</style>

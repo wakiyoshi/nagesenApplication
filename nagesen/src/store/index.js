@@ -10,6 +10,7 @@ Vue.use(Vuex)
 
 const store = new Vuex.Store({
   state: {
+
     username: '',
     email: '',
     password: '',
@@ -53,6 +54,14 @@ const store = new Vuex.Store({
     setModalDatas(state, modalDatas) {
       state.modalDatas = modalDatas
     },
+    setNagesenData(state,nage){
+      state.myWallet = nage
+    },
+    setWalletData(state,{walletData,id}){
+      console.log(state.userDatas)
+      console.log(id)
+      state.userDatas[id]['myWallet'] = walletData
+    }
   },
   actions: {
     signUp: function (context, payload) {
@@ -128,6 +137,7 @@ const store = new Vuex.Store({
           .then((querySnapshot) => {
             querySnapshot.forEach((doc) => {
               const userDatas = {
+                uid: doc.data().uid,
                 username: doc.data().username,
                 myWallet: doc.data().myWallet,
               };
@@ -155,27 +165,27 @@ const store = new Vuex.Store({
               }
               modalDatas.push(modalData)
               context.commit('setModalDatas', modalDatas)
-              console.log(modalDatas)
+
             });
         });
       },
-    nagesen(context,nagesen,val) {
-      // console.log(val);
+    nagesen(context,{ nagesen,uid,wallet,userWallet,val}) {
+      console.log(uid,wallet)
+
       const user = firebase.auth().currentUser
       const db = firebase.firestore();
-      const sendRef = db.collection("userData").doc(user.uid)
-      sendRef.update({
-        myWallet :  nagesen
+      const sendRef = db.collection("userData");
+      sendRef.doc(user.uid).update({
+        myWallet :  Number(userWallet) - Number(nagesen)
       })
-      // console.log(sendRef);
-      db.collection("userData")
-      .where(firebase.firestore.FieldPath.documentId(), "==", val)
-      .get()
-      .update({
-        myWallet : nage
+      const nage = userWallet - nagesen
+      context.commit('setNagesenData', nage)
+      db.collection('userData').doc(uid).update({
+        myWallet: Number(wallet) + Number(nagesen),
       })
+      const walletData = Number(wallet) + Number(nagesen)
 
-
+      context.commit('setWalletData', {walletData: walletData,id: val})
     }
   }
 
