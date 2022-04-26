@@ -141,8 +141,6 @@ const store = new Vuex.Store({
                 username: doc.data().username,
                 myWallet: doc.data().myWallet,
               };
-
-
               context.commit("setUserDatas",userDatas)
 
             });
@@ -170,22 +168,36 @@ const store = new Vuex.Store({
         });
       },
     nagesen(context,{ nagesen,uid,wallet,userWallet,val}) {
-      console.log(uid,wallet)
 
       const user = firebase.auth().currentUser
       const db = firebase.firestore();
-      const sendRef = db.collection("userData");
-      sendRef.doc(user.uid).update({
-        myWallet :  Number(userWallet) - Number(nagesen)
-      })
-      const nage = userWallet - nagesen
-      context.commit('setNagesenData', nage)
-      db.collection('userData').doc(uid).update({
-        myWallet: Number(wallet) + Number(nagesen),
-      })
-      const walletData = Number(wallet) + Number(nagesen)
+      const sendRef = db.collection("userData").doc(user.uid);
+      const sentRef = db.collection("userData").doc(uid);
 
-      context.commit('setWalletData', {walletData: walletData,id: val})
+      db.runTransaction((t)=>{
+         t.update(sendRef,{
+          myWallet :  Number(userWallet) - Number(nagesen)
+        })
+      // sendRef.doc(user.uid).update({
+      //   myWallet :  Number(userWallet) - Number(nagesen)
+      // })
+      t.update(sentRef,{
+        myWallet: Number(wallet) + Number(nagesen),
+
+      })
+      return Promise.resolve();
+      })
+      .then(()=>{
+
+        const walletData = Number(wallet) + Number(nagesen)
+        context.commit('setWalletData', {walletData: walletData,id: val})
+        const nage = userWallet - nagesen
+        context.commit('setNagesenData', nage)
+
+      })
+      .catch((error)=>{
+        console.log(error.message);
+      })
     }
   }
 
